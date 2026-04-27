@@ -30,11 +30,11 @@ fun decodeAudioFile(context: Context, uri: Uri) : ByteArray? {
         codec.configure(audioFormat, null, null, 0)
         codec.start()
 
-        var decodedAudio = ByteArrayOutputStream()
-        var inputDone: Boolean = false
+        val decodedAudio = ByteArrayOutputStream()
+        var inputDone = false
 
         val bufferInfo = MediaCodec.BufferInfo()
-        var outputDone: Boolean = false
+        var outputDone = false
 
         while (!outputDone) {
             if (!inputDone) {
