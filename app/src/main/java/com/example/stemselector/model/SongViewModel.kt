@@ -12,9 +12,11 @@ import com.example.stemselector.tools.saveSongs
 class SongViewModel(application: Application) : AndroidViewModel(application) {
     private val _songList = MutableStateFlow<List<Song>>(emptyList())
     private val _currentSong = MutableStateFlow<Song?>(null)
+    private val _muteStates = MutableStateFlow<Map<String, Boolean>>(emptyMap<String, Boolean>())
 
     val songListPublic: StateFlow<List<Song>> = _songList.asStateFlow()
     val currentSongPublic: StateFlow<Song?> = _currentSong.asStateFlow()
+    val muteStatesPublic = _muteStates.asStateFlow()
 
     init {
         _songList.value = loadSongs(getApplication<Application>())
@@ -27,5 +29,13 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectSong(song: Song) {
         _currentSong.value = song
+
+        _muteStates.value = song.stemPaths.associateWith { false }
+    }
+
+    fun toggleMute(stemPath: String) {
+        val newMap = _muteStates.value.toMutableMap()
+        newMap[stemPath] = !newMap[stemPath]!!
+        _muteStates.value = newMap
     }
 }

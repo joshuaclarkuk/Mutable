@@ -24,7 +24,12 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
         }
         else {
             items(songList) { song ->
-                Text(song.songTitle)
+                Button(onClick = {
+                    songViewModel.selectSong(song)
+                    onNavigateToSong()
+                })  {
+                    Text(song.songTitle)
+                }
             }
         }
     }
