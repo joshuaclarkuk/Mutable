@@ -1,11 +1,17 @@
 package com.example.stemselector
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.stemselector.model.SongViewModel
 import com.example.stemselector.navigation.AppNavigation
 import com.example.stemselector.ui.theme.StemSelectorTheme
 
@@ -16,7 +22,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             StemSelectorTheme {
                 val navHostController: NavHostController = rememberNavController()
-                AppNavigation(navHostController)
+                val songViewModel: SongViewModel = viewModel()
+
+                val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocumentTree()) { uri ->
+                    Log.d("MainActivity", "Folder URI: $uri")
+                    if (uri != null) {
+                        val newFile: DocumentFile? = DocumentFile.fromTreeUri(this@MainActivity, uri)
+                        if (newFile != null) {
+                            val fileList: Array<DocumentFile> = newFile.listFiles()
+                            for (file in fileList) {
+                                Log.d("MainActivity", file.name ?: "unnamed")
+                            }
+                        }
+                    }
+                }
+
+                AppNavigation(navHostController, songViewModel, { launcher.launch(null)})
             }
         }
     }

@@ -10,10 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.example.stemselector.model.SongViewModel
 import com.example.stemselector.ui.components.StemButton
 
 @Composable
-fun SongScreen(onNavigateToMainMenu: () -> Unit) {
+fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         DrawBackToMenuButton(onNavigateToMainMenu)
         DrawStemColumn()
