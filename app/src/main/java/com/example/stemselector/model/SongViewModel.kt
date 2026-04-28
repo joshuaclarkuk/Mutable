@@ -14,6 +14,7 @@ import com.example.stemselector.tools.saveSongs
 
 class SongViewModel(application: Application) : AndroidViewModel(application) {
     private val songImporter = SongImporter(application.applicationContext, viewModelScope)
+    private val _importError = MutableStateFlow<String?>(null)
     private val _songList = MutableStateFlow<List<Song>>(emptyList())
     private val _currentSong = MutableStateFlow<Song?>(null)
     private val _muteStates = MutableStateFlow<Map<String, Boolean>>(emptyMap<String, Boolean>())
@@ -23,6 +24,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     val currentSongPublic: StateFlow<Song?> = _currentSong.asStateFlow()
     val muteStatesPublic = _muteStates.asStateFlow()
     val isImportingPublic = _isImporting.asStateFlow()
+    val importErrorPublic = _importError.asStateFlow()
 
     init {
         _songList.value = loadSongs(getApplication<Application>())
@@ -30,7 +32,10 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun importSong(uri: Uri) {
         _isImporting.value = true
-        songImporter.importSong(uri) { song ->
+        songImporter.importSong(uri, onError = { message ->
+            _importError.value = message
+            _isImporting.value = false
+        }) { song ->
             addSong(song)
             _isImporting.value = false
         }
@@ -51,5 +56,9 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
         val newMap = _muteStates.value.toMutableMap()
         newMap[stemPath] = !newMap[stemPath]!!
         _muteStates.value = newMap
+    }
+
+    fun clearError() {
+        _importError.value = null
     }
 }

@@ -17,10 +17,21 @@ import com.example.stemselector.model.SongViewModel
 @Composable
 fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songViewModel: SongViewModel) {
     val isImporting by songViewModel.isImportingPublic.collectAsState()
+    val importError by songViewModel.importErrorPublic.collectAsState()
     val songList by songViewModel.songListPublic.collectAsState()
 
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
         item { DisplayImportSongButton(onImportSong, isImporting) }
+
+        if (importError != null) {
+            item {
+                Text(importError.toString())
+                Button(onClick = { songViewModel.clearError() }) {
+                    Text("Dismiss")
+                }
+            }
+        }
+
         if (songList.isEmpty()) {
             item {
                 if (isImporting) {
