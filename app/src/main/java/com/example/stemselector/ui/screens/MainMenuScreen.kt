@@ -16,11 +16,19 @@ import com.example.stemselector.model.SongViewModel
 
 @Composable
 fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songViewModel: SongViewModel) {
+    val isImporting by songViewModel.isImportingPublic.collectAsState()
     val songList by songViewModel.songListPublic.collectAsState()
+
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = WindowInsets.systemBars.asPaddingValues()) {
-        item { DisplayImportSongButton(onImportSong) }
+        item { DisplayImportSongButton(onImportSong, isImporting) }
         if (songList.isEmpty()) {
-            item { Text("No songs to display")}
+            item {
+                if (isImporting) {
+                    Text("Importing...")
+                } else {
+                    Text("No songs to display")
+                }
+            }
         }
         else {
             items(songList) { song ->
@@ -36,8 +44,8 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
 }
 
 @Composable
-fun DisplayImportSongButton(onImportSong: () -> Unit) {
-    Button(onClick = onImportSong) {
+fun DisplayImportSongButton(onImportSong: () -> Unit, isImporting: Boolean) {
+    Button(onClick = onImportSong, enabled = !isImporting) {
         Text("Import Song")
     }
 }
