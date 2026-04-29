@@ -29,6 +29,13 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     val importErrorPublic = _importError.asStateFlow()
 
     init {
+        // Delete temporary folder to clear orphan stems
+        val tempDirectory = File(getApplication<Application>().filesDir, "temp")
+        if (tempDirectory.exists()) {
+            tempDirectory.deleteRecursively()
+        }
+
+        // Load songs from JSON
         _songList.value = loadSongs(getApplication<Application>())
     }
 
