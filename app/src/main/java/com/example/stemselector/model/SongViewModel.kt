@@ -2,9 +2,14 @@ package com.example.stemselector.model
 
 import android.app.Application
 import android.net.Uri
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.stemselector.engine.StemPlayer
 import com.example.stemselector.tools.SongImporter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +21,8 @@ import java.io.File
 
 class SongViewModel(application: Application) : AndroidViewModel(application) {
     private val songImporter = SongImporter(application.applicationContext, viewModelScope)
+    private val stemPlayer = StemPlayer(viewModelScope)
+
     private val _importError = MutableStateFlow<String?>(null)
     private val _songList = MutableStateFlow<List<Song>>(emptyList())
     private val _currentSong = MutableStateFlow<Song?>(null)
@@ -37,6 +44,11 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
         // Load songs from JSON
         _songList.value = loadSongs(getApplication<Application>())
+    }
+
+    override fun onCleared() {
+        stemPlayer.stop()
+        stemPlayer.audioTrack?.release()
     }
 
     fun importSong(uri: Uri) {
@@ -67,8 +79,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectSong(song: Song) {
+        stemPlayer.stop() // Defensive to prevent two tracks playing simultaneously (even though it shouldn't be possible)
         _currentSong.value = song
-
         _muteStates.value = song.stemPaths.associateWith { false }
     }
 
@@ -91,5 +103,19 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearError() {
         _importError.value = null
+    }
+
+    fun play() {
+        if (_currentSong.value != null) {
+            stemPlayer.play(_currentSong.value!!.stemPaths)
+        }
+    }
+
+    fun pause() {
+        stemPlayer.pause()
+    }
+
+    fun stop() {
+        stemPlayer.stop()
     }
 }

@@ -1,6 +1,8 @@
 package com.example.stemselector.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -21,7 +23,10 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     val muteStates = songViewModel.muteStatesPublic.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-        DrawBackToMenuButton(onNavigateToMainMenu)
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop)
+            DrawBackToMenuButton(onNavigateToMainMenu)
+        }
         DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value, songViewModel::toggleMute)
     }
 }
@@ -50,6 +55,21 @@ fun DrawStemButton(colour: Color, isMuted: Boolean, displayName: String, onClick
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(displayName)
+    }
+}
+
+@Composable
+fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () -> Unit) {
+    Row {
+        Button(onClick = onPlay) {
+            Text("Play")
+        }
+        Button(onClick = onPause) {
+            Text("Pause")
+        }
+        Button(onClick = onStop) {
+            Text("Stop")
+        }
     }
 }
 
