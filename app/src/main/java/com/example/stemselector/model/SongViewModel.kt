@@ -82,6 +82,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
         stemPlayer.stop() // Defensive to prevent two tracks playing simultaneously (even though it shouldn't be possible)
         _currentSong.value = song
         _muteStates.value = song.stemPaths.associateWith { false }
+        song.stemPaths.forEach { stemPlayer.setMuted(it, false) }
     }
 
     fun deleteSong(song: Song) {
@@ -97,8 +98,9 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleMute(stemPath: String) {
         val newMap = _muteStates.value.toMutableMap()
-        newMap[stemPath] = !newMap[stemPath]!!
+        newMap[stemPath] = !(newMap[stemPath] ?: false)
         _muteStates.value = newMap
+        stemPlayer.setMuted(stemPath, newMap[stemPath]!!)
     }
 
     fun clearError() {

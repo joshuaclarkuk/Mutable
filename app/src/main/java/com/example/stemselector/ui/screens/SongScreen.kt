@@ -27,7 +27,9 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
             DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop)
             DrawBackToMenuButton(onNavigateToMainMenu)
         }
-        DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value, songViewModel::toggleMute)
+        if (currentSong.value != null) {
+            DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value,  songViewModel::toggleMute)
+        }
     }
 }
 

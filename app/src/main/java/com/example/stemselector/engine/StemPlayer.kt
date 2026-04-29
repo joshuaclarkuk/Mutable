@@ -16,7 +16,7 @@ class StemPlayer(coroutineScope: CoroutineScope) {
     // Each stem gets own stream to be read incrementally without loading full files into memory
     var stemStreams: MutableMap<String, InputStream> = mutableMapOf()
     // Mixing loop checks this for each stem on every buffer cycle, zeroes out stem's buffer before mixing to mute it
-    var muteStates: MutableMap<String, Boolean> = mutableMapOf()
+    var mutedStems: MutableMap<String, Boolean> = mutableMapOf()
 
     // Used by the scrubber UI to show position, and by seekTo() to know where to skip to in each stream
     var currentPositionBytes: Int = 0
@@ -80,7 +80,7 @@ class StemPlayer(coroutineScope: CoroutineScope) {
                     }
 
                     // Skip mixing if this stem is muted
-                    if (muteStates[stemPath] == true) continue
+                    if (mutedStems[stemPath] == true) continue
 
                     // Convert bytes to 16-bit samples and mix
                     var i = 0
@@ -115,5 +115,9 @@ class StemPlayer(coroutineScope: CoroutineScope) {
             stream.value.close()
         }
         stemStreams.clear()
+    }
+
+    fun setMuted(stemPath: String, isMuted: Boolean) {
+        mutedStems[stemPath] = isMuted
     }
 }
