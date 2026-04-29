@@ -2,6 +2,7 @@ package com.example.stemselector.model
 
 import android.app.Application
 import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stemselector.tools.SongImporter
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.stemselector.tools.loadSongs
 import com.example.stemselector.tools.saveSongs
+import java.io.File
 
 
 class SongViewModel(application: Application) : AndroidViewModel(application) {
@@ -31,6 +33,17 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun importSong(uri: Uri) {
+        // Clear existing error message if active
+        _importError.value = null
+
+        // Check if any song in _songList has the same title as the folder being imported
+        for (song: Song in _songList.value) {
+            if (song.sourceFolderUri == uri.toString()) {
+                _importError.value = "Song already imported!"
+                return
+            }
+        }
+
         _isImporting.value = true
         songImporter.importSong(uri, onError = { message ->
             _importError.value = message
@@ -50,6 +63,17 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
         _currentSong.value = song
 
         _muteStates.value = song.stemPaths.associateWith { false }
+    }
+
+    fun deleteSong(song: Song) {
+        for (stemPath in song.stemPaths) {
+            val doc = File(stemPath)
+            if (doc.exists()) {
+                doc.delete()
+            }
+        }
+        _songList.value -= song
+        saveSongs(getApplication<Application>(), _songList.value)
     }
 
     fun toggleMute(stemPath: String) {

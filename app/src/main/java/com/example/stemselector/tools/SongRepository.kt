@@ -10,9 +10,12 @@ fun loadSongs(context: Context) : List<Song> {
     if (!file.exists()) {
         return emptyList()
     }
-    else {
+    try {
         val jsonText = file.readText()
         return Json.decodeFromString<List<Song>>(jsonText)
+    }
+    catch (exception: Exception) {
+        return emptyList()
     }
 }
 

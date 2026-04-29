@@ -14,8 +14,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.stemselector.model.SongViewModel
-import com.example.stemselector.ui.components.StemButton
-import java.nio.file.Paths
 
 @Composable
 fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
