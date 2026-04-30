@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stemselector.model.SongViewModel
 
 @Composable
@@ -32,7 +33,10 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop)
-            DrawBackToMenuButton(onNavigateToMainMenu)
+            DrawBackToMenuButton(onNavigateToMainMenu = {
+                songViewModel.teardown()
+                onNavigateToMainMenu()
+            })
         }
         if (currentSong.value != null) {
             DrawSongScrubber(currentPositionBytes =  playbackPosition, totalBytes = songViewModel.totalSongLengthInBytes, onScrubFinished = { bytes -> songViewModel.seekTo(bytes) })

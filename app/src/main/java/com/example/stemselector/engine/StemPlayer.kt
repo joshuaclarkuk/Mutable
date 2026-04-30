@@ -3,9 +3,12 @@ package com.example.stemselector.engine
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -33,6 +36,9 @@ class StemPlayer(coroutineScope: CoroutineScope) {
     // The mixing loop checks this on every cycle. When pause() or stop() sets it to false, the loop exits cleanly.
     var isPlaying = false
 
+    // Prevents race condition error where releasing the audioTrack causes the mix loop to crash
+    private var playbackJob: Job? = null
+
     // Mixing loop runs continuously on a background thread so it doesn't freeze the UI
     val coroutineScope = coroutineScope
 
@@ -49,12 +55,16 @@ class StemPlayer(coroutineScope: CoroutineScope) {
 
     fun stop() {
         isPlaying = false
-        audioTrack?.stop()
-        currentPositionBytes = 0
-        for (stream in stemStreams) {
-            stream.value.close()
+        audioTrack?.pause()
+        audioTrack?.flush()
+
+        // Reset streams to beginning
+        for ((stemPath, stream) in stemStreams) {
+            stream.close()
+            stemStreams[stemPath] = FileInputStream(stemPath)
         }
-        stemStreams.clear()
+
+        currentPositionBytes = 0
     }
 
     fun setMuted(stemPath: String, isMuted: Boolean) {
@@ -63,6 +73,7 @@ class StemPlayer(coroutineScope: CoroutineScope) {
 
     suspend fun seekTo(positionBytes: Long) {
         val wasPlaying = isPlaying
+        val alignedPosition = positionBytes - (positionBytes % 4)
 
         isPlaying = false
         delay(100)
@@ -74,15 +85,28 @@ class StemPlayer(coroutineScope: CoroutineScope) {
             for ((stemPath, stream) in stemStreams) {
                 stream.close()
                 stemStreams[stemPath] = FileInputStream(stemPath)
-                stemStreams[stemPath]?.skip(positionBytes)
+                stemStreams[stemPath]?.skip(alignedPosition)
             }
         }
 
-        currentPositionBytes = positionBytes
+        currentPositionBytes = alignedPosition
 
         if (wasPlaying) {
             startMixingLoop()
         }
+    }
+
+    // Free up all resources ready for new song to be selected
+    fun teardown() {
+        isPlaying = false
+        audioTrack?.stop()
+        audioTrack?.release()
+        audioTrack = null
+        currentPositionBytes = 0
+        for (stream in stemStreams) {
+            stream.value.close()
+        }
+        stemStreams.clear()
     }
 
     private fun setupAudioTrack() {
@@ -120,51 +144,75 @@ class StemPlayer(coroutineScope: CoroutineScope) {
     }
 
     private fun startMixingLoop() {
-        audioTrack?.play()
+        // Capture a local reference and check state before starting
+        val track = audioTrack ?: return
+        if (track.state != AudioTrack.STATE_INITIALIZED) return
+
         isPlaying = true
+        track.play()
 
-        // Launch mixing loop coroutine
-        coroutineScope.launch(Dispatchers.IO) {
-            val mixBuffer = ShortArray(bufferSize / 2) // Divide by 2 because each short = 2 bytes
-            val stemBuffer = ByteArray(bufferSize)
+        // Assign the coroutine to playbackJob so we can cancel it in teardown
+        playbackJob = coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val mixBuffer = ShortArray(bufferSize / 2)
+                val stemBuffer = ByteArray(bufferSize)
 
-            while (isPlaying) {
-                // Clear mix buffer each cycle so previous audio doesn't bleed through
-                mixBuffer.fill(0)
+                // Use isActive to ensure the loop stops immediately on cancellation
+                while (isPlaying && isActive) {
+                    mixBuffer.fill(0)
 
-                for ((stemPath, stream) in stemStreams) {
-                    val bytesRead = stream.read(stemBuffer)
+                    for ((stemPath, stream) in stemStreams) {
+                        val bytesRead = stream.read(stemBuffer)
 
-                    // If any stem runs out of data, playback is complete
-                    if (bytesRead <= 0) {
-                        isPlaying = false
-                        break
+                        if (bytesRead <= 0) {
+                            isPlaying = false
+                            break
+                        }
+
+                        if (mutedStems[stemPath] == true) continue
+
+                        // Conversion logic (Little-endian PCM)
+                        var i = 0
+                        while (i < bytesRead - 1) {
+                            val sample = (stemBuffer[i].toInt() and 0xff) or
+                                    (stemBuffer[i + 1].toInt() shl 8)
+
+                            val currentMix = mixBuffer[i / 2].toInt()
+
+                            mixBuffer[i / 2] = (currentMix + sample).coerceIn(
+                                Short.MIN_VALUE.toInt(),
+                                Short.MAX_VALUE.toInt()
+                            ).toShort()
+                            i += 2
+                        }
                     }
 
-                    // Skip mixing if this stem is muted
-                    if (mutedStems[stemPath] == true) continue
-
-                    // Convert bytes to 16-bit samples and mix
-                    var i = 0
-                    while (i < bytesRead - 1) {
-                        // Combine two bytes into on Short (little-endian PCM)
-                        val sample =
-                            (stemBuffer[i].toInt() and 0xff) or (stemBuffer[i + 1].toInt() shl 8)
-                        val currentMix = mixBuffer[i / 2].toInt()
-
-                        // Add sample to mix, clamp to Short range to prevent distortion
-                        mixBuffer[i / 2] = (currentMix + sample).coerceIn(
-                            Short.MIN_VALUE.toInt(),
-                            Short.MAX_VALUE.toInt()
-                        ).toShort()
-                        i += 2
+                    // Final safety check before writing to the hardware
+                    if (track.state == AudioTrack.STATE_INITIALIZED) {
+                        track.write(mixBuffer, 0, mixBuffer.size, AudioTrack.WRITE_BLOCKING)
+                        currentPositionBytes += bufferSize
                     }
                 }
-                audioTrack!!.write(mixBuffer, 0, mixBuffer.size, AudioTrack.WRITE_BLOCKING)
-                currentPositionBytes += bufferSize
+            } catch (e: Exception) {
+                Log.e("StemPlayer", "Error in mixing loop: ${e.message}")
+            } finally {
+                // This block runs regardless of whether the loop finished naturally
+                // or was cancelled by the back button.
+                stopTrackSafely(track)
             }
+        }
+    }
 
-            audioTrack!!.stop()
+    private fun stopTrackSafely(track: AudioTrack) {
+        try {
+            if (track.state == AudioTrack.STATE_INITIALIZED &&
+                track.playState != AudioTrack.PLAYSTATE_STOPPED) {
+                track.stop()
+            }
+        } catch (e: IllegalStateException) {
+            // This happens if teardown() calls track.release()
+            // while this coroutine is mid-execution. Safe to ignore.
+            Log.d("StemPlayer", "Track already released, skipping stop()")
         }
     }
 }
