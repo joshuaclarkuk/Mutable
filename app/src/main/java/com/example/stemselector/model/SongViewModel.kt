@@ -54,6 +54,16 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
             tempDirectory.deleteRecursively()
         }
 
+        // Delete empty song folders from previous deletions
+        val songsFolder = File(getApplication<Application>().filesDir, "songs")
+        if (songsFolder.exists()) {
+            for (folder in songsFolder.listFiles() ?: emptyArray()) {
+                if (folder.listFiles()?.isEmpty() == true) {
+                    folder.delete()
+                }
+            }
+        }
+
         // Load songs from JSON
         _songList.value = loadSongs(getApplication<Application>())
     }
@@ -105,6 +115,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
                 doc.delete()
             }
         }
+
+        // Remove from song list
         _songList.value -= song
         saveSongs(getApplication<Application>(), _songList.value)
     }
