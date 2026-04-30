@@ -42,6 +42,7 @@ class StemPlayer(
     private var playbackJob: Job? = null
 
     fun play(stemPaths: List<String>) {
+        if (isPlaying) { return} // Guard against pressing Play twice crash
         this.stemPaths = stemPaths
         setupAudioTrack()
         startMixingLoop()
