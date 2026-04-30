@@ -15,7 +15,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 
-class StemPlayer(coroutineScope: CoroutineScope) {
+class StemPlayer(
+    val coroutineScope: CoroutineScope //Used to run mixing loop continuously on a background thread so it doesn't freeze the UI
+) {
     // Single output device that sends mixed audio to the speakers. There's only one because multiple instances would drift out of sync
     var audioTrack: AudioTrack? = null
 
@@ -38,9 +40,6 @@ class StemPlayer(coroutineScope: CoroutineScope) {
 
     // Prevents race condition error where releasing the audioTrack causes the mix loop to crash
     private var playbackJob: Job? = null
-
-    // Mixing loop runs continuously on a background thread so it doesn't freeze the UI
-    val coroutineScope = coroutineScope
 
     fun play(stemPaths: List<String>) {
         this.stemPaths = stemPaths
@@ -196,8 +195,7 @@ class StemPlayer(coroutineScope: CoroutineScope) {
             } catch (e: Exception) {
                 Log.e("StemPlayer", "Error in mixing loop: ${e.message}")
             } finally {
-                // This block runs regardless of whether the loop finished naturally
-                // or was cancelled by the back button.
+                // This block runs regardless of whether the loop finished naturally or was cancelled by the back button
                 stopTrackSafely(track)
             }
         }
@@ -210,8 +208,7 @@ class StemPlayer(coroutineScope: CoroutineScope) {
                 track.stop()
             }
         } catch (e: IllegalStateException) {
-            // This happens if teardown() calls track.release()
-            // while this coroutine is mid-execution. Safe to ignore.
+            // This happens if teardown() calls track.release() while this coroutine is mid-execution
             Log.d("StemPlayer", "Track already released, skipping stop()")
         }
     }

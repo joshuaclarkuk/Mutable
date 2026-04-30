@@ -133,6 +133,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stop() {
         stemPlayer.stop()
+        _playbackPosition.value = 0
     }
 
     fun seekTo(positionBytes: Long) {
@@ -143,7 +144,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updatePlaybackPosition() {
         viewModelScope.launch {
-            while(stemPlayer.isPlaying) {
+            while(true) {
                 _playbackPosition.value = stemPlayer.currentPositionBytes
                 delay(50)
             }
