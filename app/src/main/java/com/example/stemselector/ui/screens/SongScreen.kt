@@ -85,11 +85,12 @@ fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () ->
 
 @Composable
 fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinished: (Long) -> Unit) {
-    var sliderPosition by remember { mutableFloatStateOf(currentPositionBytes.toFloat() / totalBytes) }
+    val fraction = if (totalBytes > 0) currentPositionBytes.toFloat() / totalBytes else 0f
+    var sliderPosition by remember { mutableFloatStateOf(fraction) }
     var isDragging by remember { mutableStateOf(false) }
 
     Slider(
-        value = if (isDragging) sliderPosition else (currentPositionBytes.toFloat() / totalBytes),
+        value = if (isDragging) sliderPosition else fraction,
         onValueChange = { newFraction -> isDragging = true; sliderPosition = newFraction },
         onValueChangeFinished = { isDragging = false; val positionBytes = (sliderPosition * totalBytes).toLong(); onScrubFinished(positionBytes) },
         valueRange = 0f..1f

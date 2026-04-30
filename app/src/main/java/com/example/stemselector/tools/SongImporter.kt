@@ -62,6 +62,7 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
 
     private fun moveTempToFinal(songId: String, tempFolder: File, onError: (String) -> Unit): File? {
         val finalFolder = File(File(context.filesDir, "songs"), songId)
+        finalFolder.parentFile?.mkdirs()
         val moved = tempFolder.renameTo(finalFolder)
         if (!moved || finalFolder.listFiles() == null) {
             onError("Failed to move files to permanent storage")
