@@ -10,9 +10,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.stemselector.model.SongViewModel
@@ -21,6 +27,7 @@ import com.example.stemselector.model.SongViewModel
 fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     val currentSong = songViewModel.currentSongPublic.collectAsState()
     val muteStates = songViewModel.muteStatesPublic.collectAsState()
+    val playbackPosition by songViewModel.playbackPositionPublic.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
@@ -28,6 +35,7 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
             DrawBackToMenuButton(onNavigateToMainMenu)
         }
         if (currentSong.value != null) {
+            DrawSongScrubber(currentPositionBytes =  playbackPosition, totalBytes = songViewModel.totalSongLengthInBytes, onScrubFinished = { bytes -> songViewModel.seekTo(bytes) })
             DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value,  songViewModel::toggleMute)
         }
     }
@@ -73,6 +81,19 @@ fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () ->
             Text("Stop")
         }
     }
+}
+
+@Composable
+fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinished: (Long) -> Unit) {
+    var sliderPosition by remember { mutableFloatStateOf(currentPositionBytes.toFloat() / totalBytes) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    Slider(
+        value = if (isDragging) sliderPosition else (currentPositionBytes.toFloat() / totalBytes),
+        onValueChange = { newFraction -> isDragging = true; sliderPosition = newFraction },
+        onValueChangeFinished = { isDragging = false; val positionBytes = (sliderPosition * totalBytes).toLong(); onScrubFinished(positionBytes) },
+        valueRange = 0f..1f
+    )
 }
 
 @Composable

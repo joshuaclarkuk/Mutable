@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.stemselector.tools.loadSongs
 import com.example.stemselector.tools.saveSongs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -27,13 +33,19 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     private val _songList = MutableStateFlow<List<Song>>(emptyList())
     private val _currentSong = MutableStateFlow<Song?>(null)
     private val _muteStates = MutableStateFlow<Map<String, Boolean>>(emptyMap<String, Boolean>())
+    private val _playbackPosition = MutableStateFlow<Long>(0)
     private val _isImporting = MutableStateFlow<Boolean>(false)
 
     val songListPublic: StateFlow<List<Song>> = _songList.asStateFlow()
     val currentSongPublic: StateFlow<Song?> = _currentSong.asStateFlow()
     val muteStatesPublic = _muteStates.asStateFlow()
+    val playbackPositionPublic = _playbackPosition.asStateFlow()
     val isImportingPublic = _isImporting.asStateFlow()
     val importErrorPublic = _importError.asStateFlow()
+
+    // Pass-through variable that's updated whenever totalSongLengthInBytes is updated
+    val totalSongLengthInBytes: Long
+        get() = stemPlayer.totalSongLengthInBytes
 
     init {
         // Delete temporary folder to clear orphan stems
@@ -110,6 +122,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     fun play() {
         if (_currentSong.value != null) {
             stemPlayer.play(_currentSong.value!!.stemPaths)
+            updatePlaybackPosition()
         }
     }
 
@@ -119,5 +132,20 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stop() {
         stemPlayer.stop()
+    }
+
+    fun seekTo(positionBytes: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            stemPlayer.seekTo(positionBytes)
+        }
+    }
+
+    fun updatePlaybackPosition() {
+        viewModelScope.launch {
+            while(stemPlayer.isPlaying) {
+                _playbackPosition.value = stemPlayer.currentPositionBytes
+                delay(50)
+            }
+        }
     }
 }
