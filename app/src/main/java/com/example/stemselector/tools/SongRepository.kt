@@ -1,6 +1,7 @@
 package com.example.stemselector.tools
 
 import android.content.Context
+import android.util.Log
 import com.example.stemselector.model.Song
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -15,6 +16,7 @@ fun loadSongs(context: Context) : List<Song> {
         return Json.decodeFromString<List<Song>>(jsonText)
     }
     catch (exception: Exception) {
+        Log.d("SongRepository", "Load song error: ${exception}")
         return emptyList()
     }
 }
