@@ -11,6 +11,7 @@ val SurfaceLight = Color(0xFFFAFAF8)
 val SurfaceDark = Color(0xFF2A2A2A)
 val TextLight = Color(0xFF1A1A1A)
 val TextDark = Color(0xFFF0F0F0)
+val DeleteRed = Color(0xFFD32F2F)
 
 // Stem Background Colours
 val stemBackgroundColours = listOf<Color>(
