@@ -35,8 +35,8 @@ import com.example.stemselector.ui.theme.CyanPrimary
 import com.example.stemselector.ui.theme.stemBackgroundColours
 import com.example.stemselector.ui.theme.stemTextColours
 
-const val roundedBorderAmount: Int = 20
-const val borderPadding: Int = 2
+const val roundedBorderAmount: Int = 4
+const val borderPadding: Int = 4
 
 @Composable
 fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
@@ -84,6 +84,7 @@ fun DrawStemButton(backgroundColour: Color, textColour: Color, isMuted: Boolean,
     val displayColourText = if (isMuted) textColour.copy(alpha = 0.7f) else textColour
     Button(
         onClick = onClick,
+        shape = RoundedCornerShape(4.dp),
         colors = ButtonDefaults.buttonColors(containerColor = displayColourBackground, contentColor = displayColourText),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -94,15 +95,15 @@ fun DrawStemButton(backgroundColour: Color, textColour: Color, isMuted: Boolean,
 @Composable
 fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () -> Unit) {
     Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(CyanPrimary).padding(borderPadding.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(contentColor = CyanDark)
+        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Play")
         }
-        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(contentColor = CyanDark)
+        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Pause")
         }
-        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(contentColor = CyanDark)
+        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Stop")
         }
@@ -130,7 +131,7 @@ fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinish
 @Composable
 fun DrawBackToMenuButton(onNavigateToMainMenu: () -> Unit) {
     Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(CyanPrimary).padding(borderPadding.dp), horizontalArrangement = Arrangement.End) {
-        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(contentColor = CyanDark)) {
+        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)) {
             Text("Back to Main Menu")
         }
     }
