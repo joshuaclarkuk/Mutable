@@ -90,7 +90,6 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
             }
         }
     }
-
 }
 
 @Composable
