@@ -164,8 +164,9 @@ class StemPlayer(
                     for ((stemPath, stream) in stemStreams) {
                         val bytesRead = stream.read(stemBuffer)
 
+                        // Send song back to start if it finishes
                         if (bytesRead <= 0) {
-                            isPlaying = false
+                            stop()
                             break
                         }
 

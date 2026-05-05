@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.example.stemselector.model.Song
 import com.example.stemselector.model.SongViewModel
 import com.example.stemselector.ui.theme.DeleteRed
-import com.example.stemselector.ui.theme.TextDark
 
 @Composable
 fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songViewModel: SongViewModel) {
