@@ -52,7 +52,10 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
                 Log.d("SongImporter", "Failed to decode ${file.name}")
                 continue
             }
-            val stemName = file.name?.split(".")?.first()?.lowercase()
+            // Extract stem name from file name and capitalise each first letter
+            val stemName = file.name?.split(".")?.first()?.split(" ")?.joinToString(" ") { word ->
+                word.replaceFirstChar { it.uppercaseChar() }
+            }
             File(tempFolder, "$stemName.pcm").writeBytes(decodedAudio)
             Log.d("SongImporter", "Decoded: ${file.name}, Size: ${decodedAudio.size} bytes")
             wroteAny = true
