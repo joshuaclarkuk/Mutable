@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.stemselector.model.Song
 import com.example.stemselector.model.SongViewModel
@@ -41,19 +44,19 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
 
     var songPendingDeletion by remember { mutableStateOf<Song?>(null) }
 
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(16.dp).systemBarsPadding()) {
+    Box(Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(16.dp).systemBarsPadding()) {
         Column {
-            // Import error behaviour
-            if (importError != null) {
-                Row(Modifier.fillMaxWidth()) {
-                    Text(importError.toString(), Modifier.weight(1f))
-                    Button(onClick = { songViewModel.clearError() }) {
-                        Text("Dismiss")
-                    }
-                }
-            }
+            // Title behaviour
+            Text(
+                text = "Stem Selector",
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                style = MaterialTheme.typography.headlineLarge
+            )
+
             // Song list behaviour
-            LazyColumn(Modifier.weight(1f)) {
+            LazyColumn(Modifier.heightIn(max = (LocalConfiguration.current.screenHeightDp / 2).dp)) {
                 if (isImporting) {
                     item {
                         Text("Importing...")
@@ -72,10 +75,24 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
                         }
                     }
                 }
-                // Import button behaviour
-                item {
-                    DisplayImportSongButton(onImportSong, isImporting)
+            }
+
+            // Import error behaviour
+            if (importError != null) {
+                Row(Modifier.fillMaxWidth()) {
+                    Text(
+                        importError.toString(),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(onClick = { songViewModel.clearError() }) {
+                        Text("Dismiss")
+                    }
                 }
+            }
+            else {
+                // Import button behaviour
+                DisplayImportSongButton(onImportSong, isImporting)
             }
 
             // Display confirmation dialogue when delete is selected
