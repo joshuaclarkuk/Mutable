@@ -1,4 +1,4 @@
-package com.example.stemselector.ui.screens
+package com.joshuaclark.mutable.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,9 +32,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.stemselector.model.Song
-import com.example.stemselector.model.SongViewModel
-import com.example.stemselector.ui.theme.DeleteRed
+import com.joshuaclark.mutable.model.Song
+import com.joshuaclark.mutable.model.SongViewModel
+import com.joshuaclark.mutable.ui.theme.DeleteRed
 
 @Composable
 fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songViewModel: SongViewModel) {
@@ -42,13 +42,13 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
     val importError by songViewModel.importErrorPublic.collectAsState()
     val songList by songViewModel.songListPublic.collectAsState()
 
-    var songPendingDeletion by remember { mutableStateOf<Song?>(null) }
+    var songPendingDeletion by remember { mutableStateOf<com.joshuaclark.mutable.model.Song?>(null) }
 
     Box(Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(16.dp).systemBarsPadding()) {
         Column {
             // Title behaviour
             Text(
-                text = "Stem Selector",
+                text = "Mutable",
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
@@ -117,17 +117,17 @@ fun DisplayImportSongButton(onImportSong: () -> Unit, isImporting: Boolean) {
 }
 
 @Composable
-fun DisplaySongRow(song: Song, onNavigateToSong: () -> Unit, onDeleteRequest: () -> Unit) {
+fun DisplaySongRow(song: com.joshuaclark.mutable.model.Song, onNavigateToSong: () -> Unit, onDeleteRequest: () -> Unit) {
     Row(Modifier.fillMaxWidth()) {
         Text(text = song.songTitle, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.clickable(onClick = onNavigateToSong).weight(1f))
         IconButton(onClick = { onDeleteRequest() }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete song", tint = DeleteRed)
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete song", tint = com.joshuaclark.mutable.ui.theme.DeleteRed)
         }
     }
 }
 
 @Composable
-fun DisplayConfirmDeleteDialogue(pendingSong: Song, onDeleteSong: () -> Unit, onCancelDeletion: () -> Unit, dialogueTitle: String, dialogueText: String, icon: ImageVector?) {
+fun DisplayConfirmDeleteDialogue(pendingSong: com.joshuaclark.mutable.model.Song, onDeleteSong: () -> Unit, onCancelDeletion: () -> Unit, dialogueTitle: String, dialogueText: String, icon: ImageVector?) {
     AlertDialog(
         icon = { if (icon != null) { Icon(icon, contentDescription = "Example icon") } },
         title = { (Text(dialogueTitle)) },

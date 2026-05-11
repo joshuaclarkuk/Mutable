@@ -1,4 +1,4 @@
-package com.example.stemselector.model
+package com.joshuaclark.mutable.model
 
 import kotlinx.serialization.Serializable
 

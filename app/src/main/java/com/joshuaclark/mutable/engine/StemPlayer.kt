@@ -1,4 +1,4 @@
-package com.example.stemselector.engine
+package com.joshuaclark.mutable.engine
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import kotlin.collections.iterator
 
 class StemPlayer(
     val coroutineScope: CoroutineScope //Used to run mixing loop continuously on a background thread so it doesn't freeze the UI

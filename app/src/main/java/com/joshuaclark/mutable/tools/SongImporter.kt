@@ -1,10 +1,10 @@
-package com.example.stemselector.tools
+package com.joshuaclark.mutable.tools
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import com.example.stemselector.model.Song
+import com.joshuaclark.mutable.model.Song
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +13,7 @@ import java.util.UUID
 
 class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
 
-    fun importSong(uri: Uri, onError: (String) -> Unit, onComplete: (Song) -> Unit) {
+    fun importSong(uri: Uri, onError: (String) -> Unit, onComplete: (com.joshuaclark.mutable.model.Song) -> Unit) {
         coroutineScope.launch(Dispatchers.IO) {
             val selectedFolder = DocumentFile.fromTreeUri(context, uri)
             if (selectedFolder == null) {
@@ -35,7 +35,14 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
 
             val stemPaths = finalFolder.listFiles()?.map { it.path } ?: emptyList()
             val songTitle = selectedFolder.name ?: "Unknown"
-            onComplete(Song(songId, songTitle, uri.toString(), stemPaths))
+            onComplete(
+                com.joshuaclark.mutable.model.Song(
+                    songId,
+                    songTitle,
+                    uri.toString(),
+                    stemPaths
+                )
+            )
         }
     }
 

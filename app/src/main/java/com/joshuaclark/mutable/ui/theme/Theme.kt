@@ -1,4 +1,4 @@
-package com.example.stemselector.ui.theme
+package com.joshuaclark.mutable.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

@@ -1,8 +1,7 @@
-package com.example.stemselector.ui.screens
+package com.joshuaclark.mutable.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,11 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.stemselector.model.SongViewModel
-import com.example.stemselector.ui.theme.CyanDark
-import com.example.stemselector.ui.theme.CyanPrimary
-import com.example.stemselector.ui.theme.stemBackgroundColours
-import com.example.stemselector.ui.theme.stemTextColours
+import com.joshuaclark.mutable.model.SongViewModel
+import com.joshuaclark.mutable.ui.theme.CyanDark
+import com.joshuaclark.mutable.ui.theme.CyanPrimary
+import com.joshuaclark.mutable.ui.theme.stemBackgroundColours
+import com.joshuaclark.mutable.ui.theme.stemTextColours
 
 const val roundedBorderAmount: Int = 4
 const val borderPadding: Int = 4
@@ -62,8 +61,8 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
 @Composable
 fun DrawStemColumn(stemPaths: List<String>, muteStates: Map<String, Boolean>, onToggle: (String) -> Unit) {
     val count = stemPaths.size
-    val backgroundColours = List(count) { index -> stemBackgroundColours[index % stemBackgroundColours.size] }
-    val textColours = List(count) { index -> stemTextColours[index % stemTextColours.size] }
+    val backgroundColours = List(count) { index -> com.joshuaclark.mutable.ui.theme.stemBackgroundColours[index % com.joshuaclark.mutable.ui.theme.stemBackgroundColours.size] }
+    val textColours = List(count) { index -> com.joshuaclark.mutable.ui.theme.stemTextColours[index % com.joshuaclark.mutable.ui.theme.stemTextColours.size] }
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.verticalScroll(scrollState)) {
@@ -94,16 +93,18 @@ fun DrawStemButton(backgroundColour: Color, textColour: Color, isMuted: Boolean,
 
 @Composable
 fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(CyanPrimary).padding(borderPadding.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
+    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(
+        com.joshuaclark.mutable.ui.theme.CyanPrimary
+    ).padding(borderPadding.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
         ){
             Text("Play")
         }
-        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
+        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
         ){
             Text("Pause")
         }
-        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
+        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
         ){
             Text("Stop")
         }
@@ -122,16 +123,18 @@ fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinish
         onValueChangeFinished = { isDragging = false; val positionBytes = (sliderPosition * totalBytes).toLong(); onScrubFinished(positionBytes) },
         valueRange = 0f..1f,
         colors = SliderDefaults.colors(
-            thumbColor = CyanPrimary,
-            activeTrackColor = CyanPrimary
+            thumbColor = com.joshuaclark.mutable.ui.theme.CyanPrimary,
+            activeTrackColor = com.joshuaclark.mutable.ui.theme.CyanPrimary
         )
     )
 }
 
 @Composable
 fun DrawBackToMenuButton(onNavigateToMainMenu: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(CyanPrimary).padding(borderPadding.dp), horizontalArrangement = Arrangement.End) {
-        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)) {
+    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(
+        com.joshuaclark.mutable.ui.theme.CyanPrimary
+    ).padding(borderPadding.dp), horizontalArrangement = Arrangement.End) {
+        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)) {
             Text("Back to Main Menu")
         }
     }

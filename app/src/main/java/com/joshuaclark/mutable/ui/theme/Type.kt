@@ -1,4 +1,4 @@
-package com.example.stemselector.ui.theme
+package com.joshuaclark.mutable.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
