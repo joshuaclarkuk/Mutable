@@ -50,7 +50,7 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
             Text(
                 text = "Mutable",
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 style = MaterialTheme.typography.headlineLarge
             )
@@ -59,7 +59,7 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
             LazyColumn(Modifier.heightIn(max = (LocalConfiguration.current.screenHeightDp / 2).dp)) {
                 if (isImporting) {
                     item {
-                        Text("Importing...")
+                        Text(text = "Importing...", color = MaterialTheme.colorScheme.onBackground)
                     }
                 } else {
                     if (songList.isEmpty()) {
