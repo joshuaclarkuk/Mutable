@@ -151,50 +151,45 @@ class StemPlayer(
     }
 
     private fun startMixingLoop() {
-        // Capture a local reference and check state before starting
         val track = audioTrack ?: return
         if (track.state != AudioTrack.STATE_INITIALIZED) return
 
         isPlaying = true
         track.play()
 
-        // Assign the coroutine to playbackJob so we can cancel it in teardown
         playbackJob = coroutineScope.launch(Dispatchers.IO) {
             try {
                 val mixBuffer = ShortArray(bufferSize / 2)
                 val stemBuffer = ByteArray(bufferSize)
 
-                // Use isActive to ensure the loop stops immediately on cancellation
                 while (isPlaying && isActive) {
                     mixBuffer.fill(0)
 
                     for ((stemPath, stream) in stemStreams) {
-                        val bytesRead = stream.read(stemBuffer)
+                        var bytesRead = stream.read(stemBuffer)
 
-                        // Send song back to start if it finishes and loop if required
-                        if (bytesRead <= 0) {
-                            if (isLooping) {
-                                for ((stemPath, _) in stemStreams) {
-                                    stemStreams[stemPath]?.close()
-                                    stemStreams[stemPath] = FileInputStream(stemPath)
-                                }
-                                currentPositionBytes = 0
-                            } else {
+                        if (bytesRead < bufferSize) {
+                            if (!isLooping) {
                                 stop()
+                                break
                             }
-                            break
+                            stemStreams[stemPath]?.close()
+                            stemStreams[stemPath] = FileInputStream(stemPath)
+                            currentPositionBytes = 0
+
+                            if (bytesRead < 0) bytesRead = 0
+                            val remaining = bufferSize - bytesRead
+                            stemStreams[stemPath]?.read(stemBuffer, bytesRead, remaining)
+                            bytesRead = bufferSize
                         }
 
                         if (mutedStems[stemPath] == true) continue
 
-                        // Conversion logic (Little-endian PCM)
                         var i = 0
                         while (i < bytesRead - 1) {
                             val sample = (stemBuffer[i].toInt() and 0xff) or
                                     (stemBuffer[i + 1].toInt() shl 8)
-
                             val currentMix = mixBuffer[i / 2].toInt()
-
                             mixBuffer[i / 2] = (currentMix + sample).coerceIn(
                                 Short.MIN_VALUE.toInt(),
                                 Short.MAX_VALUE.toInt()
@@ -203,7 +198,6 @@ class StemPlayer(
                         }
                     }
 
-                    // Final safety check before writing to the hardware
                     if (track.state == AudioTrack.STATE_INITIALIZED) {
                         track.write(mixBuffer, 0, mixBuffer.size, AudioTrack.WRITE_BLOCKING)
                         currentPositionBytes += bufferSize
@@ -212,7 +206,6 @@ class StemPlayer(
             } catch (e: Exception) {
                 Log.e("StemPlayer", "Error in mixing loop: ${e.message}")
             } finally {
-                // This block runs regardless of whether the loop finished naturally or was cancelled by the back button
                 stopTrackSafely(track)
             }
         }

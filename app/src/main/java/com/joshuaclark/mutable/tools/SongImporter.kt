@@ -25,7 +25,7 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
             val tempFolder = File(File(context.filesDir, "temp"), songId)
             tempFolder.mkdirs()
 
-            val wroteAny = decodeStemsToTemp(selectedFolder, tempFolder)
+            val wroteAny = decodeStemsToTemp(selectedFolder, tempFolder, onError)
             if (!wroteAny) {
                 onError("No supported audio files found")
                 return@launch
@@ -46,7 +46,7 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
         }
     }
 
-    private fun decodeStemsToTemp(selectedFolder: DocumentFile, tempFolder: File): Boolean {
+    private fun decodeStemsToTemp(selectedFolder: DocumentFile, tempFolder: File, onError: (String) -> Unit): Boolean {
         var wroteAny = false
         for (file in selectedFolder.listFiles()) {
             val extension = file.name?.split(".")?.last()?.lowercase()
@@ -67,6 +67,19 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
             Log.d("SongImporter", "Decoded: ${file.name}, Size: ${decodedAudio.size} bytes")
             wroteAny = true
         }
+
+        // Get all newly decoded pcm files and check they are all the same length
+        val pcmFiles = tempFolder.listFiles { file -> file.name.endsWith(".pcm") }
+        if (pcmFiles != null && pcmFiles.size > 1) {
+            val expectedSize = pcmFiles.first().length()
+            for (file in pcmFiles.drop(1)) {
+                if (file.length() != expectedSize) {
+                    onError("Stems must be the same length")
+                    return false
+                }
+            }
+        }
+
         return wroteAny
     }
 

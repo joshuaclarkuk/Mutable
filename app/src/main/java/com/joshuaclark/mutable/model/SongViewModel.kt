@@ -176,6 +176,8 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun teardown() {
+        _isLooping.value = false
+        stemPlayer.isLooping = false
         stemPlayer.teardown()
     }
 }
