@@ -37,9 +37,9 @@ class StemPlayer(
     var totalSongLengthInBytes: Long = 0
 
     // The mixing loop checks this on every cycle. When pause() or stop() sets it to false, the loop exits cleanly.
-    var isPlaying = false
+    var isPlaying: Boolean = false
 
-    var isLooping = false
+    var isLooping: Boolean = false
 
     // Prevents race condition error where releasing the audioTrack causes the mix loop to crash
     private var playbackJob: Job? = null
@@ -68,6 +68,10 @@ class StemPlayer(
         }
 
         currentPositionBytes = 0
+    }
+
+    fun loop(isLooping: Boolean) {
+        this.isLooping = isLooping
     }
 
     fun setMuted(stemPath: String, isMuted: Boolean) {

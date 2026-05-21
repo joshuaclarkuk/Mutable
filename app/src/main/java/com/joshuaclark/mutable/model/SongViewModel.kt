@@ -1,5 +1,6 @@
 package com.joshuaclark.mutable.model
 
+import android.R
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
@@ -29,12 +30,14 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentSong = MutableStateFlow<Song?>(null)
     private val _muteStates = MutableStateFlow<Map<String, Boolean>>(emptyMap<String, Boolean>())
     private val _playbackPosition = MutableStateFlow<Long>(0)
+    private val _isLooping = MutableStateFlow<Boolean>(false)
     private val _isImporting = MutableStateFlow<Boolean>(false)
 
     val songListPublic: StateFlow<List<Song>> = _songList.asStateFlow()
     val currentSongPublic: StateFlow<Song?> = _currentSong.asStateFlow()
     val muteStatesPublic = _muteStates.asStateFlow()
     val playbackPositionPublic = _playbackPosition.asStateFlow()
+    val isLoopingPublic = _isLooping.asStateFlow()
     val isImportingPublic = _isImporting.asStateFlow()
     val importErrorPublic = _importError.asStateFlow()
 
@@ -148,6 +151,12 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
     fun stop() {
         stemPlayer.stop()
         _playbackPosition.value = 0
+    }
+
+    fun toggleLoop() {
+        val isLooping = !_isLooping.value
+        _isLooping.value = isLooping
+        stemPlayer.isLooping = isLooping
     }
 
     fun seekTo(positionBytes: Long) {

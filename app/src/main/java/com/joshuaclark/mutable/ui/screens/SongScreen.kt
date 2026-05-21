@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.joshuaclark.mutable.model.SongViewModel
 import com.joshuaclark.mutable.ui.theme.CyanDark
+import com.joshuaclark.mutable.ui.theme.CyanLight
 import com.joshuaclark.mutable.ui.theme.CyanPrimary
 import com.joshuaclark.mutable.ui.theme.stemBackgroundColours
 import com.joshuaclark.mutable.ui.theme.stemTextColours
@@ -42,10 +43,11 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     val currentSong = songViewModel.currentSongPublic.collectAsState()
     val muteStates = songViewModel.muteStatesPublic.collectAsState()
     val playbackPosition by songViewModel.playbackPositionPublic.collectAsState()
+    val isLooping by songViewModel.isLoopingPublic.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).systemBarsPadding()) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop)
+            DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop, onLoop = songViewModel::toggleLoop, isLooping = isLooping)
         }
         if (currentSong.value != null) {
             DrawSongScrubber(currentPositionBytes =  playbackPosition, totalBytes = songViewModel.totalSongLengthInBytes, onScrubFinished = { bytes -> songViewModel.seekTo(bytes) })
@@ -92,21 +94,25 @@ fun DrawStemButton(backgroundColour: Color, textColour: Color, isMuted: Boolean,
 }
 
 @Composable
-fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(
-        com.joshuaclark.mutable.ui.theme.CyanPrimary
-    ).padding(borderPadding.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
+fun DrawTransportControls(onPlay: () -> Unit, onPause: () -> Unit, onStop: () -> Unit, onLoop: () -> Unit, isLooping: Boolean) {
+    Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(size = roundedBorderAmount.dp)).background(
+        color = CyanPrimary
+    ).padding(all = borderPadding.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Button(onClick = onPlay, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Play")
         }
-        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
+        Button(onClick = onPause, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Pause")
         }
-        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)
+        Button(onClick = onStop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)
         ){
             Text("Stop")
+        }
+        Button(onClick = onLoop, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = if (isLooping) CyanLight else CyanDark)
+        ){
+            Text("Loop")
         }
     }
 }
@@ -132,9 +138,9 @@ fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinish
 @Composable
 fun DrawBackToMenuButton(onNavigateToMainMenu: () -> Unit) {
     Row(Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(roundedBorderAmount.dp)).background(
-        com.joshuaclark.mutable.ui.theme.CyanPrimary
+        CyanPrimary
     ).padding(borderPadding.dp), horizontalArrangement = Arrangement.End) {
-        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = com.joshuaclark.mutable.ui.theme.CyanDark)) {
+        Button(onClick = onNavigateToMainMenu, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = CyanDark)) {
             Text("Back to Main Menu")
         }
     }

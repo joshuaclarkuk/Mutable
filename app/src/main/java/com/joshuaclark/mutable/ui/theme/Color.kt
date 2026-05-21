@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 // Scheme Colours
 val CyanPrimary = Color(0xFF00ADFF)
 val CyanDark = Color(0xFF003D5C)
+val CyanLight = Color(0xFF7FBFD6)
 val BackgroundLight = Color(0xFFF2F2F0)
 val BackgroundDark = Color(0xFF1E1E1E)
 val SurfaceLight = Color(0xFFFAFAF8)
