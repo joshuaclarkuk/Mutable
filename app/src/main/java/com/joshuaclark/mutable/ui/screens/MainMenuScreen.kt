@@ -42,7 +42,7 @@ fun MainMenuScreen(onNavigateToSong: () -> Unit, onImportSong: () -> Unit, songV
     val importError by songViewModel.importErrorPublic.collectAsState()
     val songList by songViewModel.songListPublic.collectAsState()
 
-    var songPendingDeletion by remember { mutableStateOf<com.joshuaclark.mutable.model.Song?>(null) }
+    var songPendingDeletion by remember { mutableStateOf<Song?>(null) }
 
     Box(Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).padding(16.dp).systemBarsPadding()) {
         Column {
@@ -117,17 +117,17 @@ fun DisplayImportSongButton(onImportSong: () -> Unit, isImporting: Boolean) {
 }
 
 @Composable
-fun DisplaySongRow(song: com.joshuaclark.mutable.model.Song, onNavigateToSong: () -> Unit, onDeleteRequest: () -> Unit) {
+fun DisplaySongRow(song: Song, onNavigateToSong: () -> Unit, onDeleteRequest: () -> Unit) {
     Row(Modifier.fillMaxWidth()) {
         Text(text = song.songTitle, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.clickable(onClick = onNavigateToSong).weight(1f))
         IconButton(onClick = { onDeleteRequest() }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete song", tint = com.joshuaclark.mutable.ui.theme.DeleteRed)
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete song", tint = DeleteRed)
         }
     }
 }
 
 @Composable
-fun DisplayConfirmDeleteDialogue(pendingSong: com.joshuaclark.mutable.model.Song, onDeleteSong: () -> Unit, onCancelDeletion: () -> Unit, dialogueTitle: String, dialogueText: String, icon: ImageVector?) {
+fun DisplayConfirmDeleteDialogue(pendingSong: Song, onDeleteSong: () -> Unit, onCancelDeletion: () -> Unit, dialogueTitle: String, dialogueText: String, icon: ImageVector?) {
     AlertDialog(
         icon = { if (icon != null) { Icon(icon, contentDescription = "Example icon") } },
         title = { (Text(dialogueTitle)) },

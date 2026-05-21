@@ -39,6 +39,8 @@ class StemPlayer(
     // The mixing loop checks this on every cycle. When pause() or stop() sets it to false, the loop exits cleanly.
     var isPlaying = false
 
+    var isLooping = false
+
     // Prevents race condition error where releasing the audioTrack causes the mix loop to crash
     private var playbackJob: Job? = null
 
@@ -165,9 +167,17 @@ class StemPlayer(
                     for ((stemPath, stream) in stemStreams) {
                         val bytesRead = stream.read(stemBuffer)
 
-                        // Send song back to start if it finishes
+                        // Send song back to start if it finishes and loop if required
                         if (bytesRead <= 0) {
-                            stop()
+                            if (isLooping) {
+                                for ((stemPath, _) in stemStreams) {
+                                    stemStreams[stemPath]?.close()
+                                    stemStreams[stemPath] = FileInputStream(stemPath)
+                                }
+                                currentPositionBytes = 0
+                            } else {
+                                stop()
+                            }
                             break
                         }
 

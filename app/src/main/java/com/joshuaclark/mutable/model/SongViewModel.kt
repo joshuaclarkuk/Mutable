@@ -5,11 +5,11 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.joshuaclark.mutable.engine.StemPlayer
-import com.joshuaclark.mutable.tools.SongImporter
+import com.joshuaclark.mutable.tools.loadSongs
+import com.joshuaclark.mutable.tools.saveSongs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.joshuaclark.mutable.tools.loadSongs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope
     )
     private val stemPlayer =
-        com.joshuaclark.mutable.engine.StemPlayer(viewModelScope)
+        StemPlayer(viewModelScope)
 
     private val _importError = MutableStateFlow<String?>(null)
     private val _songList = MutableStateFlow<List<Song>>(emptyList())
@@ -61,7 +61,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
         // Load songs from JSON
         _songList.value =
-            com.joshuaclark.mutable.tools.loadSongs(getApplication<Application>())
+            loadSongs(getApplication<Application>())
     }
 
     override fun onCleared() {
@@ -93,7 +93,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addSong(song: Song) {
         _songList.value += song
-        com.joshuaclark.mutable.tools.saveSongs(
+        saveSongs(
             getApplication<Application>(),
             _songList.value
         )
@@ -117,7 +117,7 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
         // Remove from song list
         _songList.value -= song
-        com.joshuaclark.mutable.tools.saveSongs(
+        saveSongs(
             getApplication<Application>(),
             _songList.value
         )

@@ -13,7 +13,7 @@ import java.util.UUID
 
 class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
 
-    fun importSong(uri: Uri, onError: (String) -> Unit, onComplete: (com.joshuaclark.mutable.model.Song) -> Unit) {
+    fun importSong(uri: Uri, onError: (String) -> Unit, onComplete: (Song) -> Unit) {
         coroutineScope.launch(Dispatchers.IO) {
             val selectedFolder = DocumentFile.fromTreeUri(context, uri)
             if (selectedFolder == null) {
@@ -36,7 +36,7 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
             val stemPaths = finalFolder.listFiles()?.map { it.path } ?: emptyList()
             val songTitle = selectedFolder.name ?: "Unknown"
             onComplete(
-                com.joshuaclark.mutable.model.Song(
+                Song(
                     songId,
                     songTitle,
                     uri.toString(),
