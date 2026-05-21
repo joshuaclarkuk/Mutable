@@ -12,7 +12,6 @@ import java.io.File
 import java.util.UUID
 
 class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
-
     fun importSong(uri: Uri, onError: (String) -> Unit, onComplete: (Song) -> Unit) {
         coroutineScope.launch(Dispatchers.IO) {
             val selectedFolder = DocumentFile.fromTreeUri(context, uri)
@@ -43,6 +42,58 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
                     stemPaths
                 )
             )
+        }
+    }
+
+    fun loadSampleSong(onComplete: (Song) -> Unit) {
+        val prefs = context.getSharedPreferences("mutable_prefs", Context.MODE_PRIVATE)
+        val isLoaded = prefs.getBoolean("sample_loaded", false)
+        if (isLoaded) return
+
+        coroutineScope.launch(Dispatchers.IO) {
+            val songId = UUID.randomUUID().toString()
+            val tempFolder = File(File(context.filesDir, "temp"), songId)
+            tempFolder.mkdirs()
+
+            // Copy FLACs from assets to temp folder
+            val assetFiles = context.assets.list("sample_song") ?: return@launch
+            for (filename in assetFiles) {
+                val outFile = File(tempFolder, filename)
+                context.assets.open("sample_song/$filename").use { inputStream ->
+                    outFile.writeBytes(inputStream.readBytes())
+                }
+            }
+
+            // Decode each FLAC to PCM, then delete the FLAC copy
+            var wroteAny = false
+            for (file in tempFolder.listFiles() ?: emptyArray()) {
+                val decodedAudio = decodeAudioFile(context, Uri.fromFile(file)) ?: continue
+                val stemName = file.nameWithoutExtension
+                    .split(" ")
+                    .joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
+                File(tempFolder, "$stemName.pcm").writeBytes(decodedAudio)
+                file.delete() // Delete the FLAC copy to free space
+                wroteAny = true
+            }
+
+            if (!wroteAny) return@launch
+
+            // Move temp to final
+            val finalFolder = moveTempToFinal(songId, tempFolder) { } ?: return@launch
+
+            val stemPaths = finalFolder.listFiles()?.map { it.path } ?: emptyList()
+
+            val song = Song(
+                songId,
+                "Adam Fielding - The Destroyer (Demo)",
+                "bundled",
+                stemPaths
+            )
+
+            prefs.edit().putBoolean("sample_loaded", true).apply()
+
+            // Return song via callback
+            onComplete(song)
         }
     }
 

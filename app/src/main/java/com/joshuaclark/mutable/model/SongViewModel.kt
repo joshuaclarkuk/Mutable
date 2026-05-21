@@ -2,6 +2,7 @@ package com.joshuaclark.mutable.model
 
 import android.R
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,6 +64,12 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+        // Load sample song
+        songImporter.loadSampleSong { song ->
+            _songList.value += song
+            saveSongs(getApplication<Application>(), _songList.value)
+        }
+
         // Load songs from JSON
         _songList.value =
             loadSongs(getApplication<Application>())
@@ -121,6 +128,14 @@ class SongViewModel(application: Application) : AndroidViewModel(application) {
 
         // Remove from song list
         _songList.value -= song
+
+        // Delete sample song
+        if (song.sourceFolderUri == "bundled") {
+            getApplication<Application>()
+                .getSharedPreferences("mutable_prefs", Context.MODE_PRIVATE)
+                .edit().putBoolean("sample_loaded", false).apply()
+        }
+
         saveSongs(
             getApplication<Application>(),
             _songList.value
