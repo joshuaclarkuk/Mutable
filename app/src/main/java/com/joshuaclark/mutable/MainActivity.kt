@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            com.joshuaclark.mutable.ui.theme.StemSelectorTheme {
+            StemSelectorTheme {
                 val navHostController: NavHostController = rememberNavController()
                 val songViewModel: SongViewModel = viewModel()
 
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                             songViewModel.importSong(uri)
                         }
                     }
-                com.joshuaclark.mutable.navigation.AppNavigation(
+                AppNavigation(
                     navHostController,
                     songViewModel,
                     { launcher.launch(null) })

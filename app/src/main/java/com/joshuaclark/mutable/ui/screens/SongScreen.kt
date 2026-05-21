@@ -63,8 +63,8 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
 @Composable
 fun DrawStemColumn(stemPaths: List<String>, muteStates: Map<String, Boolean>, onToggle: (String) -> Unit) {
     val count = stemPaths.size
-    val backgroundColours = List(count) { index -> com.joshuaclark.mutable.ui.theme.stemBackgroundColours[index % com.joshuaclark.mutable.ui.theme.stemBackgroundColours.size] }
-    val textColours = List(count) { index -> com.joshuaclark.mutable.ui.theme.stemTextColours[index % com.joshuaclark.mutable.ui.theme.stemTextColours.size] }
+    val backgroundColours = List(count) { index -> stemBackgroundColours[index % stemBackgroundColours.size] }
+    val textColours = List(count) { index -> stemTextColours[index % stemTextColours.size] }
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.verticalScroll(scrollState)) {
@@ -129,8 +129,8 @@ fun DrawSongScrubber(currentPositionBytes: Long, totalBytes: Long, onScrubFinish
         onValueChangeFinished = { isDragging = false; val positionBytes = (sliderPosition * totalBytes).toLong(); onScrubFinished(positionBytes) },
         valueRange = 0f..1f,
         colors = SliderDefaults.colors(
-            thumbColor = com.joshuaclark.mutable.ui.theme.CyanPrimary,
-            activeTrackColor = com.joshuaclark.mutable.ui.theme.CyanPrimary
+            thumbColor = CyanPrimary,
+            activeTrackColor = CyanPrimary
         )
     )
 }

@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.joshuaclark.mutable.engine.StemPlayer
+import com.joshuaclark.mutable.tools.SongImporter
 import com.joshuaclark.mutable.tools.loadSongs
 import com.joshuaclark.mutable.tools.saveSongs
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,7 @@ import java.io.File
 
 
 class SongViewModel(application: Application) : AndroidViewModel(application) {
-    private val songImporter = com.joshuaclark.mutable.tools.SongImporter(
+    private val songImporter = SongImporter(
         application.applicationContext,
         viewModelScope
     )
