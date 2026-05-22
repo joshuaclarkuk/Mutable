@@ -32,7 +32,9 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
 
             val finalFolder = moveTempToFinal(songId, tempFolder, onError) ?: return@launch
 
-            val stemPaths = finalFolder.listFiles()?.map { it.path } ?: emptyList()
+            // Sort list of stems alphabetically
+            val stemPaths = finalFolder.listFiles()?.sortedBy { it.name.lowercase() } ?.map { it.path } ?: emptyList()
+
             val songTitle = selectedFolder.name ?: "Unknown"
             onComplete(
                 Song(
@@ -81,7 +83,7 @@ class SongImporter(val context: Context, val coroutineScope: CoroutineScope) {
             // Move temp to final
             val finalFolder = moveTempToFinal(songId, tempFolder) { } ?: return@launch
 
-            val stemPaths = finalFolder.listFiles()?.map { it.path } ?: emptyList()
+            val stemPaths = finalFolder.listFiles()?.sortedBy { it.name.lowercase() } ?.map { it.path } ?: emptyList()
 
             val song = Song(
                 songId,

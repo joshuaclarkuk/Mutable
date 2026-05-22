@@ -45,13 +45,13 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
     val playbackPosition by songViewModel.playbackPositionPublic.collectAsState()
     val isLooping by songViewModel.isLoopingPublic.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).systemBarsPadding()) {
+    Column(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background).systemBarsPadding()) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             DrawTransportControls(onPlay = songViewModel::play, onPause = songViewModel::pause, onStop = songViewModel::stop, onLoop = songViewModel::toggleLoop, isLooping = isLooping)
         }
         if (currentSong.value != null) {
-            DrawSongScrubber(currentPositionBytes =  playbackPosition, totalBytes = songViewModel.totalSongLengthInBytes, onScrubFinished = { bytes -> songViewModel.seekTo(bytes) })
-            DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value,  songViewModel::toggleMute)
+            DrawSongScrubber(currentPositionBytes =  playbackPosition, totalBytes = songViewModel.totalSongLengthInBytes, onScrubFinished = { bytes -> songViewModel.seekTo(positionBytes = bytes) })
+            DrawStemColumn(currentSong.value!!.stemPaths, muteStates.value,  onToggle = songViewModel::toggleMute)
         }
         DrawBackToMenuButton(onNavigateToMainMenu = {
             songViewModel.teardown()
@@ -63,8 +63,8 @@ fun SongScreen(onNavigateToMainMenu: () -> Unit, songViewModel: SongViewModel) {
 @Composable
 fun DrawStemColumn(stemPaths: List<String>, muteStates: Map<String, Boolean>, onToggle: (String) -> Unit) {
     val count = stemPaths.size
-    val backgroundColours = List(count) { index -> stemBackgroundColours[index % stemBackgroundColours.size] }
-    val textColours = List(count) { index -> stemTextColours[index % stemTextColours.size] }
+    val backgroundColours = List(size = count) { index -> stemBackgroundColours[index % stemBackgroundColours.size] }
+    val textColours = List(size = count) { index -> stemTextColours[index % stemTextColours.size] }
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.verticalScroll(scrollState)) {
@@ -73,7 +73,7 @@ fun DrawStemColumn(stemPaths: List<String>, muteStates: Map<String, Boolean>, on
             val backgroundColour = backgroundColours[index]
             val textColour = textColours[index]
             val isMuted = muteStates[stemPath] ?: false
-            val displayName = stemPath.substringAfterLast("/").substringBeforeLast(".")
+            val displayName = stemPath.substringAfterLast(delimiter = "/").substringBeforeLast(delimiter = ".")
             DrawStemButton(backgroundColour, textColour, isMuted, displayName, onClick = { onToggle(stemPath) })
         }
     }
@@ -85,7 +85,7 @@ fun DrawStemButton(backgroundColour: Color, textColour: Color, isMuted: Boolean,
     val displayColourText = if (isMuted) textColour.copy(alpha = 0.7f) else textColour
     Button(
         onClick = onClick,
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(size = 4.dp),
         colors = ButtonDefaults.buttonColors(containerColor = displayColourBackground, contentColor = displayColourText),
         modifier = Modifier.fillMaxWidth()
     ) {
